@@ -489,6 +489,100 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
               }
             },
           ),
+          // LLM Provider dropdown
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: SizedBox(
+              width: 150,
+              child: DropdownButton<LlmProviderType>(
+                value: settings.llmProviderType,
+                icon: const Icon(Icons.arrow_drop_down, size: 20),
+                elevation: 16,
+                style: TextStyle(
+                  color: theme.colorScheme.onPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                underline: Container(
+                  height: 0,
+                ),
+                dropdownColor: theme.colorScheme.surface,
+                onChanged: (LlmProviderType? newValue) {
+                  if (newValue != null && newValue != settings.llmProviderType) {
+                    // Update provider type, keep existing configuration
+                    settings.updateLlmProvider(
+                      providerType: newValue,
+                      ollamaUrl: null,
+                      ollamaModel: null,
+                      geminiApiUrl: null,
+                      geminiApiKey: null,
+                      geminiModel: null,
+                      customApiUrl: null,
+                      customApiKey: null,
+                      customModel: null,
+                      openrouterApiUrl: null,
+                      openrouterApiKey: null,
+                      openrouterModel: null,
+                      huggingfaceApiUrl: null,
+                      huggingfaceApiKey: null,
+                      huggingfaceModel: null,
+                    );
+                  }
+                },
+                items: LlmProviderType.values.map<DropdownMenuItem<LlmProviderType>>((LlmProviderType type) {
+                  String displayName;
+                  switch (type) {
+                    case LlmProviderType.ollama:
+                      displayName = AppConfig.ollamaDisplayName;
+                      break;
+                    case LlmProviderType.backend:
+                      displayName = AppConfig.backendDisplayName;
+                      break;
+                    case LlmProviderType.gemini:
+                      displayName = AppConfig.geminiDisplayName;
+                      break;
+                    case LlmProviderType.custom:
+                      displayName = AppConfig.customDisplayName;
+                      break;
+                    case LlmProviderType.openrouter:
+                      displayName = AppConfig.openRouterDisplayName;
+                      break;
+                    case LlmProviderType.huggingface:
+                      displayName = AppConfig.huggingFaceDisplayName;
+                      break;
+                  }
+                  final model = settings.getModelForProvider(type);
+                  return DropdownMenuItem<LlmProviderType>(
+                    value: type,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          displayName,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          model,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
           IconButton(
             icon: Icon(Icons.settings),
             onPressed: () => _showSettingsModal(),

@@ -96,6 +96,7 @@ class ChatProvider extends ChangeNotifier {
 
     // Create a new completer for this request
     _requestCompleter = Completer<void>();
+    final completer = _requestCompleter!;
 
     debugPrint('[CHAT_PROVIDER] ========================================');
     debugPrint('[CHAT_PROVIDER] User sending message: "$text"');
@@ -146,13 +147,13 @@ class ChatProvider extends ChangeNotifier {
       await for (final data in stream.timeout(
         const Duration(seconds: 65),
         onTimeout: (sink) {
-          if (!_requestCompleter!.isCompleted) {
-            _requestCompleter!.complete();
+          if (!completer.isCompleted) {
+            completer.complete();
           }
           sink.addError(TimeoutException('Request timed out'));
         },
       )) {
-        if (_requestCompleter!.isCompleted) {
+        if (completer.isCompleted) {
           debugPrint('[CHAT_PROVIDER] Request cancelled during stream');
           break;
         }
@@ -166,7 +167,7 @@ class ChatProvider extends ChangeNotifier {
         notifyListeners();
       }
 
-      if (!receivedContent && _requestCompleter!.isCompleted) {
+      if (!receivedContent && completer.isCompleted) {
         _messages.removeAt(botMessageIndex);
         notifyListeners();
         return;
@@ -194,14 +195,14 @@ class ChatProvider extends ChangeNotifier {
         }
         
         // Auto-speak if the setting is enabled
-        if (autoSpeak && !_requestCompleter!.isCompleted) {
+        if (autoSpeak && !completer.isCompleted) {
           debugPrint('[CHAT_PROVIDER] Auto-speak enabled, speaking FULL response...');
           await speakText(finalResponse, voiceIndex: voiceIndex, language: language ?? 'english');
         }
       }
     } catch (e, stackTrace) {
       // Don't add error message if cancelled
-      if (e is TimeoutException && _requestCompleter!.isCompleted) {
+      if (e is TimeoutException && completer.isCompleted) {
         debugPrint('[CHAT_PROVIDER] Request cancelled by user');
       } else {
         debugPrint('[CHAT_PROVIDER] ERROR during API call: $e');
@@ -256,12 +257,15 @@ class ChatProvider extends ChangeNotifier {
 
   /// Cancel the current LLM request
   Future<void> cancelRequest() async {
-    if (_isLoading && _requestCompleter != null && !_requestCompleter!.isCompleted) {
-      debugPrint('[CHAT_PROVIDER] Cancelling current request');
-      _requestCompleter!.complete();
-      _isLoading = false;
-      _requestCompleter = null;
-      notifyListeners();
+    if (_isLoading && _requestCompleter != null) {
+      final completer = _requestCompleter!;
+      if (!completer.isCompleted) {
+        debugPrint('[CHAT_PROVIDER] Cancelling current request');
+        completer.complete();
+        _isLoading = false;
+        _requestCompleter = null;
+        notifyListeners();
+      }
     }
   }
 

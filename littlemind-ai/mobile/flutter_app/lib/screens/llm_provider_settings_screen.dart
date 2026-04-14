@@ -58,6 +58,33 @@ class _LlmProviderSettingsScreenState extends State<LlmProviderSettingsScreen> {
         TextEditingController(text: settings.huggingfaceModel);
   }
 
+  String _getModelForProvider(LlmProviderType type) {
+    switch (type) {
+      case LlmProviderType.ollama:
+        return _ollamaModelController.text.isNotEmpty
+            ? _ollamaModelController.text
+            : AppConfig.defaultOllamaModel;
+      case LlmProviderType.gemini:
+        return _geminiModelController.text.isNotEmpty
+            ? _geminiModelController.text
+            : AppConfig.defaultGeminiModel;
+      case LlmProviderType.custom:
+        return _customModelController.text.isNotEmpty
+            ? _customModelController.text
+            : 'Custom';
+      case LlmProviderType.openrouter:
+        return _openrouterModelController.text.isNotEmpty
+            ? _openrouterModelController.text
+            : AppConfig.defaultOpenRouterModel;
+      case LlmProviderType.huggingface:
+        return _huggingfaceModelController.text.isNotEmpty
+            ? _huggingfaceModelController.text
+            : AppConfig.defaultHuggingFaceModel;
+      case LlmProviderType.backend:
+        return 'Backend';
+    }
+  }
+
   @override
   void dispose() {
     _ollamaUrlController.dispose();
@@ -133,15 +160,15 @@ class _LlmProviderSettingsScreenState extends State<LlmProviderSettingsScreen> {
               child: Column(
                 children: [
                   _buildProviderOption(LlmProviderType.ollama, '🏠',
-                      'Local Ollama', 'Run Ollama locally on your network'),
+                      'Local Ollama', 'Run Ollama locally on your network (${_getModelForProvider(LlmProviderType.ollama)})'),
                   _buildProviderOption(LlmProviderType.gemini, '🌐',
-                      'Google Gemini', 'Use Google Gemini API'),
+                      'Google Gemini', 'Use Google Gemini API (${_getModelForProvider(LlmProviderType.gemini)})'),
                   _buildProviderOption(LlmProviderType.custom, '🔧',
-                      'Custom API', 'Use a custom OpenAI-compatible API'),
+                      'Custom API', 'Use a custom OpenAI-compatible API (${_getModelForProvider(LlmProviderType.custom)})'),
                   _buildProviderOption(LlmProviderType.openrouter, '🔗',
-                      'OpenRouter', 'Use OpenRouter API (${AppConfig.defaultOpenRouterModel})'),
+                      'OpenRouter', 'Use OpenRouter API (${_getModelForProvider(LlmProviderType.openrouter)})'),
                   _buildProviderOption(LlmProviderType.huggingface, '🤗',
-                      'Hugging Face', 'Use HF Inference API (${AppConfig.defaultHuggingFaceModel})'),
+                      'Hugging Face', 'Use HF Inference API (${_getModelForProvider(LlmProviderType.huggingface)})'),
                   _buildProviderOption(LlmProviderType.backend, '🖥️',
                       'LittleMind Backend', 'Use existing backend server'),
                 ],

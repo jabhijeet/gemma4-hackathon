@@ -4,9 +4,9 @@ import '../config/app_config.dart';
 
 // LLM Provider types
 enum LlmProviderType {
+  gemini, // Google Gemini
   ollama, // Local Ollama
   backend, // Existing backend implementation
-  gemini, // Google Gemini
   custom, // Custom API path
   openrouter, // OpenRouter
   huggingface, // Hugging Face Inference API
@@ -23,7 +23,8 @@ class SettingsProvider extends ChangeNotifier {
   int _voiceIndex = 0; // Default voice index
 
   // LLM Provider settings
-  LlmProviderType _llmProviderType = LlmProviderType.values[AppConfig.defaultLlmProviderTypeIndex];
+  LlmProviderType _llmProviderType =
+      LlmProviderType.values[AppConfig.defaultLlmProviderTypeIndex];
   String _ollamaUrl = AppConfig.defaultOllamaUrl;
   String _ollamaModel = AppConfig.defaultOllamaModel;
   String _geminiApiUrl = AppConfig.defaultGeminiUrl;
@@ -95,32 +96,41 @@ class SettingsProvider extends ChangeNotifier {
     _name = prefs.getString(AppConfig.keyChildName) ?? '';
     _age = prefs.getInt(AppConfig.keyChildAge) ?? AppConfig.defaultChildAge;
     _interests = prefs.getString(AppConfig.keyChildInterests) ?? '';
-    _language = prefs.getString(AppConfig.keyAppLanguage) ?? AppConfig.defaultLanguage;
+    _language =
+        prefs.getString(AppConfig.keyAppLanguage) ?? AppConfig.defaultLanguage;
     _mode = prefs.getString(AppConfig.keyAppMode) ?? AppConfig.defaultMode;
-    _autoSpeak = prefs.getBool(AppConfig.keyAutoSpeak) ?? AppConfig.defaultAutoSpeak;
+    _autoSpeak =
+        prefs.getBool(AppConfig.keyAutoSpeak) ?? AppConfig.defaultAutoSpeak;
     _isDarkMode = prefs.getBool(AppConfig.keyDarkMode) ?? false;
     _voiceIndex = prefs.getInt(AppConfig.keyVoiceIndex) ?? 0;
 
     // Load LLM provider settings
-    final providerIndex =
-        prefs.getInt(AppConfig.keyLlmProviderType) ?? AppConfig.defaultLlmProviderTypeIndex;
+    final providerIndex = prefs.getInt(AppConfig.keyLlmProviderType) ??
+        AppConfig.defaultLlmProviderTypeIndex;
     _llmProviderType = LlmProviderType
         .values[providerIndex.clamp(0, LlmProviderType.values.length - 1)];
     _ollamaUrl =
         prefs.getString(AppConfig.keyOllamaUrl) ?? AppConfig.defaultOllamaUrl;
-    _ollamaModel = prefs.getString(AppConfig.keyOllamaModel) ?? AppConfig.defaultOllamaModel;
-    _geminiApiUrl = prefs.getString(AppConfig.keyGeminiApiUrl) ?? AppConfig.defaultGeminiUrl;
+    _ollamaModel = prefs.getString(AppConfig.keyOllamaModel) ??
+        AppConfig.defaultOllamaModel;
+    _geminiApiUrl = prefs.getString(AppConfig.keyGeminiApiUrl) ??
+        AppConfig.defaultGeminiUrl;
     _geminiApiKey = prefs.getString(AppConfig.keyGeminiApiKey) ?? '';
-    _geminiModel = prefs.getString(AppConfig.keyGeminiModel) ?? AppConfig.defaultGeminiModel;
+    _geminiModel = prefs.getString(AppConfig.keyGeminiModel) ??
+        AppConfig.defaultGeminiModel;
     _customApiUrl = prefs.getString(AppConfig.keyCustomApiUrl) ?? '';
     _customApiKey = prefs.getString(AppConfig.keyCustomApiKey) ?? '';
     _customModel = prefs.getString(AppConfig.keyCustomModel) ?? '';
-    _openrouterApiUrl = prefs.getString(AppConfig.keyOpenRouterApiUrl) ?? AppConfig.defaultOpenRouterUrl;
+    _openrouterApiUrl = prefs.getString(AppConfig.keyOpenRouterApiUrl) ??
+        AppConfig.defaultOpenRouterUrl;
     _openrouterApiKey = prefs.getString(AppConfig.keyOpenRouterApiKey) ?? '';
-    _openrouterModel = prefs.getString(AppConfig.keyOpenRouterModel) ?? AppConfig.defaultOpenRouterModel;
-    _huggingfaceApiUrl = prefs.getString(AppConfig.keyHuggingFaceApiUrl) ?? AppConfig.defaultHuggingFaceUrl;
+    _openrouterModel = prefs.getString(AppConfig.keyOpenRouterModel) ??
+        AppConfig.defaultOpenRouterModel;
+    _huggingfaceApiUrl = prefs.getString(AppConfig.keyHuggingFaceApiUrl) ??
+        AppConfig.defaultHuggingFaceUrl;
     _huggingfaceApiKey = prefs.getString(AppConfig.keyHuggingFaceApiKey) ?? '';
-    _huggingfaceModel = prefs.getString(AppConfig.keyHuggingFaceModel) ?? AppConfig.defaultHuggingFaceModel;
+    _huggingfaceModel = prefs.getString(AppConfig.keyHuggingFaceModel) ??
+        AppConfig.defaultHuggingFaceModel;
 
     _isLoaded = true;
     notifyListeners();
@@ -272,6 +282,24 @@ class SettingsProvider extends ChangeNotifier {
           'api_key': _huggingfaceApiKey,
           'model': _huggingfaceModel,
         };
+    }
+  }
+
+  // Get model name for a given provider type
+  String getModelForProvider(LlmProviderType type) {
+    switch (type) {
+      case LlmProviderType.ollama:
+        return _ollamaModel;
+      case LlmProviderType.backend:
+        return 'Backend';
+      case LlmProviderType.gemini:
+        return _geminiModel;
+      case LlmProviderType.custom:
+        return _customModel.isNotEmpty ? _customModel : 'Custom';
+      case LlmProviderType.openrouter:
+        return _openrouterModel;
+      case LlmProviderType.huggingface:
+        return _huggingfaceModel;
     }
   }
 }

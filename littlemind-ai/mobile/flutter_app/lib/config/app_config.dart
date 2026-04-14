@@ -8,7 +8,8 @@ class AppConfig {
   // ============================================================
   static const String defaultOllamaUrl = 'http://192.168.1.4:11434/api/chat';
   static const String defaultBackendUrl = 'http://192.168.1.3:8000/ask';
-  static const String defaultBackendStreamUrl = 'http://192.168.1.3:8000/ask_stream';
+  static const String defaultBackendStreamUrl =
+      'http://192.168.1.3:8000/ask_stream';
   static const String defaultGeminiUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/';
   static const String defaultOpenRouterUrl =
@@ -20,8 +21,8 @@ class AppConfig {
   // Default LLM Models
   // ============================================================
   static const String defaultOllamaModel = 'gemma3:4b';
-  static const String defaultGeminiModel = 'gemini-2.0-flash';
-  static const String defaultOpenRouterModel = 'google/gemma-3-1b-it:free';
+  static const String defaultGeminiModel = 'gemini-flash-latest';
+  static const String defaultOpenRouterModel = 'openrouter/free';
   static const String defaultHuggingFaceModel = 'google/gemma-3-1b-it';
 
   // ============================================================
@@ -58,7 +59,7 @@ class AppConfig {
   static const int defaultChildAge = 5;
   static const String defaultLanguage = 'english';
   static const String defaultMode = 'auto';
-  
+
   // ============================================================
   // Language Display Names
   // ============================================================
@@ -66,18 +67,19 @@ class AppConfig {
     'english': '🇬🇧 English',
     'hinglish': '🇮🇳 Hinglish (हिंदी + English)',
   };
-  
+
   /// Get the display name for a language code
   static String getLanguageDisplayName(String languageCode) {
     return languageDisplayNames[languageCode] ?? languageCode;
   }
-  
+
   /// Get all available language options with display names
   static List<Map<String, String>> getAvailableLanguages() {
     return languageDisplayNames.entries.map((entry) {
       return {'code': entry.key, 'name': entry.value};
     }).toList();
   }
+
   static const bool defaultAutoSpeak = false;
   static const int defaultLlmProviderTypeIndex = 1; // backend
 
@@ -104,7 +106,7 @@ class AppConfig {
   // ============================================================
   // Model Generation Defaults
   // ============================================================
-  static const double defaultTemperature = 0.7;
-  static const int defaultMaxTokens = 512;
-  static const double defaultTopP = 0.9;
+  static const double defaultTemperature = 0.6;
+  static const int defaultMaxTokens = 4096;
+  static const double defaultTopP = 0.8;
 }
