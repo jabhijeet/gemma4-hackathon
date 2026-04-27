@@ -25,7 +25,7 @@ class ChatApiService {
 
     debugPrint('[CHAT_API] ========================================');
     debugPrint('[CHAT_API] Sending request to backend: $_endpoint');
-    debugPrint('[CHAT_API] Request body: $requestBody');
+    debugPrint('[CHAT_API] Request body: [ENCRYPTED CONTENT]');
 
     try {
       final response = await http.post(
@@ -35,7 +35,7 @@ class ChatApiService {
       );
 
       debugPrint('[CHAT_API] Response status code: ${response.statusCode}');
-      debugPrint('[CHAT_API] Response body: ${response.body}');
+      debugPrint('[CHAT_API] Response body: [ENCRYPTED CONTENT]');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/app_config.dart';
 
 // LLM Provider types
@@ -13,6 +13,8 @@ enum LlmProviderType {
 }
 
 class SettingsProvider extends ChangeNotifier {
+  static const FlutterSecureStorage _storage = FlutterSecureStorage();
+
   String _name = '';
   int _age = AppConfig.defaultChildAge;
   String _interests = '';
@@ -92,44 +94,44 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    _name = prefs.getString(AppConfig.keyChildName) ?? '';
-    _age = prefs.getInt(AppConfig.keyChildAge) ?? AppConfig.defaultChildAge;
-    _interests = prefs.getString(AppConfig.keyChildInterests) ?? '';
-    _language =
-        prefs.getString(AppConfig.keyAppLanguage) ?? AppConfig.defaultLanguage;
-    _mode = prefs.getString(AppConfig.keyAppMode) ?? AppConfig.defaultMode;
+    _name = await _readString(AppConfig.keyChildName) ?? '';
+    _age = await _readInt(AppConfig.keyChildAge) ?? AppConfig.defaultChildAge;
+    _interests = await _readString(AppConfig.keyChildInterests) ?? '';
+    _language = await _readString(AppConfig.keyAppLanguage) ??
+        AppConfig.defaultLanguage;
+    _mode = await _readString(AppConfig.keyAppMode) ?? AppConfig.defaultMode;
     _autoSpeak =
-        prefs.getBool(AppConfig.keyAutoSpeak) ?? AppConfig.defaultAutoSpeak;
-    _isDarkMode = prefs.getBool(AppConfig.keyDarkMode) ?? false;
-    _voiceIndex = prefs.getInt(AppConfig.keyVoiceIndex) ?? 0;
+        await _readBool(AppConfig.keyAutoSpeak) ?? AppConfig.defaultAutoSpeak;
+    _isDarkMode = await _readBool(AppConfig.keyDarkMode) ?? false;
+    _voiceIndex = await _readInt(AppConfig.keyVoiceIndex) ?? 0;
 
     // Load LLM provider settings
-    final providerIndex = prefs.getInt(AppConfig.keyLlmProviderType) ??
+    final providerIndex = await _readInt(AppConfig.keyLlmProviderType) ??
         AppConfig.defaultLlmProviderTypeIndex;
     _llmProviderType = LlmProviderType
         .values[providerIndex.clamp(0, LlmProviderType.values.length - 1)];
     _ollamaUrl =
-        prefs.getString(AppConfig.keyOllamaUrl) ?? AppConfig.defaultOllamaUrl;
-    _ollamaModel = prefs.getString(AppConfig.keyOllamaModel) ??
+        await _readString(AppConfig.keyOllamaUrl) ?? AppConfig.defaultOllamaUrl;
+    _ollamaModel = await _readString(AppConfig.keyOllamaModel) ??
         AppConfig.defaultOllamaModel;
-    _geminiApiUrl = prefs.getString(AppConfig.keyGeminiApiUrl) ??
+    _geminiApiUrl = await _readString(AppConfig.keyGeminiApiUrl) ??
         AppConfig.defaultGeminiUrl;
-    _geminiApiKey = prefs.getString(AppConfig.keyGeminiApiKey) ?? '';
-    _geminiModel = prefs.getString(AppConfig.keyGeminiModel) ??
+    _geminiApiKey = await _readString(AppConfig.keyGeminiApiKey) ?? '';
+    _geminiModel = await _readString(AppConfig.keyGeminiModel) ??
         AppConfig.defaultGeminiModel;
-    _customApiUrl = prefs.getString(AppConfig.keyCustomApiUrl) ?? '';
-    _customApiKey = prefs.getString(AppConfig.keyCustomApiKey) ?? '';
-    _customModel = prefs.getString(AppConfig.keyCustomModel) ?? '';
-    _openrouterApiUrl = prefs.getString(AppConfig.keyOpenRouterApiUrl) ??
+    _customApiUrl = await _readString(AppConfig.keyCustomApiUrl) ?? '';
+    _customApiKey = await _readString(AppConfig.keyCustomApiKey) ?? '';
+    _customModel = await _readString(AppConfig.keyCustomModel) ?? '';
+    _openrouterApiUrl = await _readString(AppConfig.keyOpenRouterApiUrl) ??
         AppConfig.defaultOpenRouterUrl;
-    _openrouterApiKey = prefs.getString(AppConfig.keyOpenRouterApiKey) ?? '';
-    _openrouterModel = prefs.getString(AppConfig.keyOpenRouterModel) ??
+    _openrouterApiKey = await _readString(AppConfig.keyOpenRouterApiKey) ?? '';
+    _openrouterModel = await _readString(AppConfig.keyOpenRouterModel) ??
         AppConfig.defaultOpenRouterModel;
-    _huggingfaceApiUrl = prefs.getString(AppConfig.keyHuggingFaceApiUrl) ??
+    _huggingfaceApiUrl = await _readString(AppConfig.keyHuggingFaceApiUrl) ??
         AppConfig.defaultHuggingFaceUrl;
-    _huggingfaceApiKey = prefs.getString(AppConfig.keyHuggingFaceApiKey) ?? '';
-    _huggingfaceModel = prefs.getString(AppConfig.keyHuggingFaceModel) ??
+    _huggingfaceApiKey =
+        await _readString(AppConfig.keyHuggingFaceApiKey) ?? '';
+    _huggingfaceModel = await _readString(AppConfig.keyHuggingFaceModel) ??
         AppConfig.defaultHuggingFaceModel;
 
     _isLoaded = true;
@@ -161,30 +163,27 @@ class SettingsProvider extends ChangeNotifier {
 
     notifyListeners();
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppConfig.keyChildName, name);
-    await prefs.setInt(AppConfig.keyChildAge, age);
-    await prefs.setString(AppConfig.keyChildInterests, interests);
-    await prefs.setString(AppConfig.keyAppLanguage, language);
-    await prefs.setString(AppConfig.keyAppMode, _mode);
-    await prefs.setBool(AppConfig.keyAutoSpeak, _autoSpeak);
-    await prefs.setInt(AppConfig.keyVoiceIndex, _voiceIndex);
+    await _writeString(AppConfig.keyChildName, name);
+    await _writeInt(AppConfig.keyChildAge, age);
+    await _writeString(AppConfig.keyChildInterests, interests);
+    await _writeString(AppConfig.keyAppLanguage, language);
+    await _writeString(AppConfig.keyAppMode, _mode);
+    await _writeBool(AppConfig.keyAutoSpeak, _autoSpeak);
+    await _writeInt(AppConfig.keyVoiceIndex, _voiceIndex);
   }
 
   // Toggle dark mode
   Future<void> toggleDarkMode(bool value) async {
     _isDarkMode = value;
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(AppConfig.keyDarkMode, value);
+    await _writeBool(AppConfig.keyDarkMode, value);
   }
 
   // Update voice index
   Future<void> updateVoiceIndex(int index) async {
     _voiceIndex = index;
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(AppConfig.keyVoiceIndex, index);
+    await _writeInt(AppConfig.keyVoiceIndex, index);
   }
 
   // LLM Provider update methods
@@ -223,22 +222,47 @@ class SettingsProvider extends ChangeNotifier {
 
     notifyListeners();
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(AppConfig.keyLlmProviderType, providerType.index);
-    await prefs.setString(AppConfig.keyOllamaUrl, _ollamaUrl);
-    await prefs.setString(AppConfig.keyOllamaModel, _ollamaModel);
-    await prefs.setString(AppConfig.keyGeminiApiUrl, _geminiApiUrl);
-    await prefs.setString(AppConfig.keyGeminiApiKey, _geminiApiKey);
-    await prefs.setString(AppConfig.keyGeminiModel, _geminiModel);
-    await prefs.setString(AppConfig.keyCustomApiUrl, _customApiUrl);
-    await prefs.setString(AppConfig.keyCustomApiKey, _customApiKey);
-    await prefs.setString(AppConfig.keyCustomModel, _customModel);
-    await prefs.setString(AppConfig.keyOpenRouterApiUrl, _openrouterApiUrl);
-    await prefs.setString(AppConfig.keyOpenRouterApiKey, _openrouterApiKey);
-    await prefs.setString(AppConfig.keyOpenRouterModel, _openrouterModel);
-    await prefs.setString(AppConfig.keyHuggingFaceApiUrl, _huggingfaceApiUrl);
-    await prefs.setString(AppConfig.keyHuggingFaceApiKey, _huggingfaceApiKey);
-    await prefs.setString(AppConfig.keyHuggingFaceModel, _huggingfaceModel);
+    await _writeInt(AppConfig.keyLlmProviderType, providerType.index);
+    await _writeString(AppConfig.keyOllamaUrl, _ollamaUrl);
+    await _writeString(AppConfig.keyOllamaModel, _ollamaModel);
+    await _writeString(AppConfig.keyGeminiApiUrl, _geminiApiUrl);
+    await _writeString(AppConfig.keyGeminiApiKey, _geminiApiKey);
+    await _writeString(AppConfig.keyGeminiModel, _geminiModel);
+    await _writeString(AppConfig.keyCustomApiUrl, _customApiUrl);
+    await _writeString(AppConfig.keyCustomApiKey, _customApiKey);
+    await _writeString(AppConfig.keyCustomModel, _customModel);
+    await _writeString(AppConfig.keyOpenRouterApiUrl, _openrouterApiUrl);
+    await _writeString(AppConfig.keyOpenRouterApiKey, _openrouterApiKey);
+    await _writeString(AppConfig.keyOpenRouterModel, _openrouterModel);
+    await _writeString(AppConfig.keyHuggingFaceApiUrl, _huggingfaceApiUrl);
+    await _writeString(AppConfig.keyHuggingFaceApiKey, _huggingfaceApiKey);
+    await _writeString(AppConfig.keyHuggingFaceModel, _huggingfaceModel);
+  }
+
+  Future<String?> _readString(String key) {
+    return _storage.read(key: key);
+  }
+
+  Future<int?> _readInt(String key) async {
+    final value = await _readString(key);
+    return value == null ? null : int.tryParse(value);
+  }
+
+  Future<bool?> _readBool(String key) async {
+    final value = await _readString(key);
+    return value == null ? null : bool.tryParse(value);
+  }
+
+  Future<void> _writeString(String key, String value) {
+    return _storage.write(key: key, value: value);
+  }
+
+  Future<void> _writeInt(String key, int value) {
+    return _writeString(key, value.toString());
+  }
+
+  Future<void> _writeBool(String key, bool value) {
+    return _writeString(key, value.toString());
   }
 
   // Get current provider configuration as a map

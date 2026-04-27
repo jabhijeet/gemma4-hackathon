@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 def detect_mode(user_input: str) -> str:
     text = user_input.lower()
-    logger.debug(f"[MODE] Detecting mode for input: '{user_input[:100]}...'")
+    logger.debug("[MODE] Detecting mode for input length: %s", len(user_input))
 
     emotional_keywords = ["scared", "afraid", "sad", "angry", "cry", "dark"]
     parent_keywords = ["how do i explain", "my child"]
@@ -27,7 +27,7 @@ def detect_mode(user_input: str) -> str:
 def build_prompt(req: AskRequest) -> tuple[str, str, str]:
     """Returns (system_prompt, user_message, mode) tuple"""
     logger.info(f"[PROMPT] Building prompt for LLM model: {MODEL_NAME}")
-    logger.info(f"[PROMPT] Input text: '{req.text[:100]}...'")
+    logger.info(f"[PROMPT] Input text length: {len(req.text)}")
     
     # Use user-specified mode if provided, otherwise auto-detect
     if req.mode and req.mode in ["story", "emotion", "parent"]:

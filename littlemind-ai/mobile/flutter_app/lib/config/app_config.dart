@@ -1,5 +1,5 @@
 /// Application configuration constants
-/// Centralized configuration for LLM providers and shared preferences keys
+/// Centralized configuration for LLM providers and storage keys
 class AppConfig {
   AppConfig._();
 
@@ -26,7 +26,7 @@ class AppConfig {
   static const String defaultHuggingFaceModel = 'google/gemma-3-1b-it';
 
   // ============================================================
-  // Shared Preferences Keys
+  // Storage Keys
   // ============================================================
   static const String keyChildName = 'child_name';
   static const String keyChildAge = 'child_age';
@@ -52,6 +52,7 @@ class AppConfig {
   static const String keyHuggingFaceApiKey = 'huggingface_api_key';
   static const String keyHuggingFaceModel = 'huggingface_model';
   static const String keyHistoryEntries = 'history_entries';
+  static const String keyEncryptionKey = 'app_encryption_key';
 
   // ============================================================
   // Default Values

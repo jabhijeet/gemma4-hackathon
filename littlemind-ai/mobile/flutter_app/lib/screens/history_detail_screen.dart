@@ -70,7 +70,7 @@ class HistoryDetailScreen extends StatelessWidget {
                   icon: const Icon(Icons.copy_rounded),
                   tooltip: 'Copy response',
                   onPressed: () {
-                    Clipboard.setData(ClipboardData(text: entry.response));
+                    Clipboard.setData(ClipboardData(text: entry.decryptedResponse));
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: const Text('📋 Response copied!'),
@@ -175,7 +175,7 @@ class HistoryDetailScreen extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        entry.query,
+                        entry.decryptedQuery,
                         style: TextStyle(
                           fontSize: 16,
                           color: theme.textTheme.bodyLarge?.color,
@@ -204,7 +204,7 @@ class HistoryDetailScreen extends StatelessWidget {
                         ),
                       ),
                       child: MarkdownBody(
-                        data: entry.response,
+                        data: entry.decryptedResponse,
                         selectable: true,
                         styleSheet: MarkdownStyleSheet(
                           p: TextStyle(
@@ -238,7 +238,7 @@ class HistoryDetailScreen extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: () {
                           // Pop back with the query to re-ask
-                          Navigator.pop(context, entry.query);
+                          Navigator.pop(context, entry.decryptedQuery);
                         },
                         icon: const Icon(Icons.replay_rounded),
                         label: const Text(

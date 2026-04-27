@@ -27,7 +27,7 @@ def _load_prompt_template(name: str) -> dict:
 
 def _get_hinglish_instruction(language: str) -> str:
     if language and language.lower() == "hinglish":
-        logger.info(f"[PROMPT] Hinglish language mode enabled")
+        logger.info("[PROMPT] Hinglish language mode enabled")
         return "- IMPORTANT: Respond entirely in Hinglish (conversational Hindi written in English vocabulary/alphabet). Example: 'Tum ek bahot brave bache ho! Chalo ek kahani sunte hain.' Do NOT write in English or Devanagari script."
     return ""
 
@@ -45,7 +45,7 @@ def story_prompt(req: AskRequest) -> tuple[str, str]:
     
     logger.info(f"[PROMPT] Building story prompt for: {child_name} (age {req.age}), language={req.language or 'default'}")
     if req.interests:
-        logger.info(f"[PROMPT] User interests included: {req.interests}")
+        logger.info("[PROMPT] User interests provided")
     
     template = _load_prompt_template("story")
     

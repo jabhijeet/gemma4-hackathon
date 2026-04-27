@@ -5,8 +5,12 @@ import 'theme/app_theme.dart';
 import 'providers/chat_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/history_provider.dart';
+import 'services/encryption_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EncryptionService.instance.init();
+
   runApp(
     MultiProvider(
       providers: [

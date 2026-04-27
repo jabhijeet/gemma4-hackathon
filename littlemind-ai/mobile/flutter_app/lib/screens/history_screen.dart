@@ -106,7 +106,7 @@ class _HistoryScreenState extends State<HistoryScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('🗑️ Delete Entry?'),
         content: Text(
-          'Remove this story from your journal?\n\n"${entry.query.length > 60 ? '${entry.query.substring(0, 60)}...' : entry.query}"',
+          'Remove this story from your journal?\n\n"${entry.decryptedQuery.length > 60 ? '${entry.decryptedQuery.substring(0, 60)}...' : entry.decryptedQuery}"',
           style: const TextStyle(fontSize: 15, height: 1.4),
         ),
         actions: [
@@ -377,7 +377,7 @@ class _HistoryScreenState extends State<HistoryScreen>
     final colorIndex = index % cardColors.length;
 
     // Strip emoji prefix from response for preview
-    String responsePreview = entry.response;
+    String responsePreview = entry.decryptedResponse;
     if (responsePreview.length > 2 && !RegExp(r'^[a-zA-Z0-9]').hasMatch(responsePreview)) {
       // Response likely starts with emoji, keep it
     }
@@ -508,7 +508,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                         const Text('💬 ', style: TextStyle(fontSize: 14)),
                         Expanded(
                           child: Text(
-                            entry.query,
+                            entry.decryptedQuery,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(

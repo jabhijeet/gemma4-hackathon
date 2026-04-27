@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/app_config.dart';
+import 'encryption_service.dart';
 
 /// A single history entry representing a completed query-response interaction.
 class HistoryEntry {
@@ -9,7 +10,11 @@ class HistoryEntry {
   final DateTime dateTime;
   final String providerName;
   final String modelName;
+
+  /// Stored as AES-256-GCM ciphertext.  Use [decryptedQuery] for plaintext.
   final String query;
+
+  /// Stored as AES-256-GCM ciphertext.  Use [decryptedResponse] for plaintext.
   final String response;
 
   HistoryEntry({
@@ -21,7 +26,13 @@ class HistoryEntry {
     required this.response,
   });
 
-  /// Create from JSON map (deserialization)
+  /// Decrypt query on demand — plaintext lives only transiently.
+  String get decryptedQuery => EncryptionService.instance.decrypt(query);
+
+  /// Decrypt response on demand — plaintext lives only transiently.
+  String get decryptedResponse => EncryptionService.instance.decrypt(response);
+
+  /// Create from JSON map (deserialization) — values stay encrypted.
   factory HistoryEntry.fromJson(Map<String, dynamic> json) {
     return HistoryEntry(
       id: json['id'] as String,
@@ -33,7 +44,7 @@ class HistoryEntry {
     );
   }
 
-  /// Convert to JSON map (serialization)
+  /// Convert to JSON map (serialization) — values stay encrypted.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -46,15 +57,15 @@ class HistoryEntry {
   }
 }
 
-/// Service for persisting and retrieving history entries using SharedPreferences.
+/// Service for persisting and retrieving history entries using secure storage.
 class HistoryService {
+  static const FlutterSecureStorage _storage = FlutterSecureStorage();
   static const int maxEntries = 100;
 
   /// Load all history entries from storage, newest first.
   Future<List<HistoryEntry>> loadAll() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString(AppConfig.keyHistoryEntries);
+      final jsonString = await _storage.read(key: AppConfig.keyHistoryEntries);
       if (jsonString == null || jsonString.isEmpty) {
         return [];
       }
@@ -106,18 +117,16 @@ class HistoryService {
   /// Clear all history entries.
   Future<void> clearAll() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(AppConfig.keyHistoryEntries);
+      await _storage.delete(key: AppConfig.keyHistoryEntries);
       debugPrint('[HISTORY_SERVICE] Cleared all history');
     } catch (e) {
       debugPrint('[HISTORY_SERVICE] Error clearing history: $e');
     }
   }
 
-  /// Persist the entries list to SharedPreferences.
+  /// Persist the entries list to secure storage.
   Future<void> _persist(List<HistoryEntry> entries) async {
-    final prefs = await SharedPreferences.getInstance();
     final jsonString = json.encode(entries.map((e) => e.toJson()).toList());
-    await prefs.setString(AppConfig.keyHistoryEntries, jsonString);
+    await _storage.write(key: AppConfig.keyHistoryEntries, value: jsonString);
   }
 }

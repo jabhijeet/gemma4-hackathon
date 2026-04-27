@@ -2,6 +2,8 @@
 
 LittleMind AI is a fun, interactive storytelling voice-assistant app designed for kids. It features voice interaction using Speech-to-Text and Text-to-Speech capabilities, allowing children to talk naturally to their story friend!
 
+Current app version: `1.1.0+2`
+
 ## Architecture 🏛️
 
 The app follows a clean, modular architecture:
@@ -12,6 +14,7 @@ The app follows a clean, modular architecture:
   - `SpeechService`: Handles voice recognition and microphone interactions.
   - `ChatApiService`: Manages backend communication and API responses.
 - **Data Layer:** `ChatProvider` handles message history, loading states, and error diagnostics.
+- **Secure Local Storage:** Settings, provider credentials, and saved history are persisted with `flutter_secure_storage`.
 - **Optimized UI:** Uses `ListView.builder` for efficient rendering of long chat histories.
 
 ## Features 🚀
@@ -19,6 +22,7 @@ The app follows a clean, modular architecture:
 - **Voice Interaction 🎤:** Uses `speech_to_text` to listen to users when they press the microphone button.
 - **Audible Responses 🔊:** The bot speaks its responses aloud using `flutter_tts` with a kid-friendly speech rate.
 - **Smart Conversations:** Connects to a backend API to fetch intelligent responses.
+- **Secure Settings:** Stores app preferences, API keys, and chat history in platform secure storage.
 - **Error Diagnostics:** Long-press any error message to see diagnostic details for troubleshooting.
 - **Kid-Friendly UI/UX:** Colorful gradients and animated loading indicators.
 

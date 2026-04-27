@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../services/history_service.dart';
+import '../services/encryption_service.dart';
 
 /// Provider for managing response history state.
 class HistoryProvider extends ChangeNotifier {
@@ -13,8 +14,9 @@ class HistoryProvider extends ChangeNotifier {
     if (_searchQuery.isEmpty) return _entries;
     final query = _searchQuery.toLowerCase();
     return _entries.where((e) {
-      return e.query.toLowerCase().contains(query) ||
-          e.response.toLowerCase().contains(query) ||
+      // Decrypt transiently for search — plaintext is not retained.
+      return e.decryptedQuery.toLowerCase().contains(query) ||
+          e.decryptedResponse.toLowerCase().contains(query) ||
           e.providerName.toLowerCase().contains(query) ||
           e.modelName.toLowerCase().contains(query);
     }).toList();
@@ -38,19 +40,21 @@ class HistoryProvider extends ChangeNotifier {
   }
 
   /// Add a new history entry after a successful LLM response.
+  /// Query and response are encrypted before storage.
   Future<void> addEntry({
     required String providerName,
     required String modelName,
     required String query,
     required String response,
   }) async {
+    final enc = EncryptionService.instance;
     final entry = HistoryEntry(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       dateTime: DateTime.now(),
       providerName: providerName,
       modelName: modelName,
-      query: query,
-      response: response,
+      query: enc.encrypt(query),
+      response: enc.encrypt(response),
     );
 
     _entries.insert(0, entry);
@@ -61,7 +65,7 @@ class HistoryProvider extends ChangeNotifier {
     notifyListeners();
 
     await _historyService.saveEntry(entry);
-    debugPrint('[HISTORY_PROVIDER] Added entry: ${entry.id}');
+    debugPrint('[HISTORY_PROVIDER] Added encrypted entry: ${entry.id}');
   }
 
   /// Delete a single entry by ID.

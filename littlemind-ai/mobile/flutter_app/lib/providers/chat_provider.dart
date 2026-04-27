@@ -2,21 +2,26 @@ import 'package:flutter/foundation.dart';
 import 'dart:async';
 import '../services/llm_provider_service.dart';
 import '../services/tts_service.dart';
+import '../services/encryption_service.dart';
 import '../providers/settings_provider.dart';
 import '../providers/history_provider.dart';
 
 class ChatMessage {
-  final String text;
+  /// Stored as AES-256-GCM ciphertext.  Use [text] getter for plaintext.
+  final String _encryptedText;
   final String role;
   final String? errorDetail;
   final bool isError;
 
   ChatMessage({
-    required this.text,
+    required String text,
     required this.role,
     this.errorDetail,
     this.isError = false,
-  });
+  }) : _encryptedText = EncryptionService.instance.encrypt(text);
+
+  /// Decrypt on access — plaintext lives only transiently.
+  String get text => EncryptionService.instance.decrypt(_encryptedText);
 }
 
 class ChatProvider extends ChangeNotifier {
@@ -99,23 +104,25 @@ class ChatProvider extends ChangeNotifier {
     final completer = _requestCompleter!;
 
     debugPrint('[CHAT_PROVIDER] ========================================');
-    debugPrint('[CHAT_PROVIDER] User sending message: "$text"');
+    debugPrint('[CHAT_PROVIDER] User sending message: [ENCRYPTED CONTENT]');
     debugPrint('[CHAT_PROVIDER] Provider: $providerType');
-    debugPrint('[CHAT_PROVIDER] Settings - name: $name, age: $age, interests: $interests, language: $language, mode: $selectedMode');
+    debugPrint('[CHAT_PROVIDER] Settings - name: $name, age: $age, language: $language, mode: $selectedMode');
 
+    // Encrypt user message before storing
     _messages.add(ChatMessage(role: "user", text: text));
     _isLoading = true;
     notifyListeners();
-    debugPrint('[CHAT_PROVIDER] Added user message to list, total messages: ${_messages.length}');
+    debugPrint('[CHAT_PROVIDER] Added encrypted user message to list, total messages: ${_messages.length}');
 
     try {
       debugPrint('[CHAT_PROVIDER] Calling LlmProviderService.sendMessageStream...');
       
-      // Pre-add the empty bot message
+      // Pre-add the empty bot message (thinking indicator — not sensitive)
       _messages.add(ChatMessage(role: "bot", text: "💭 Thinking..."));
       final int botMessageIndex = _messages.length - 1;
       notifyListeners();
 
+      // Send plaintext to LLM over HTTPS — decrypt transiently
       final stream = _llmService.sendMessageStream(
         text,
         providerType: providerType,
@@ -162,6 +169,7 @@ class ChatProvider extends ChangeNotifier {
         finalMode = data["mode"] ?? "story";
         finalResponse = data["response"] ?? "";
         
+        // Encrypt the streamed response before storing
         String botResponseText = "${_llmService.getEmoji(finalMode)} $finalResponse";
         _messages[botMessageIndex] = ChatMessage(role: "bot", text: botResponseText);
         notifyListeners();
@@ -181,9 +189,9 @@ class ChatProvider extends ChangeNotifier {
         );
         notifyListeners();
       } else {
-        debugPrint('[CHAT_PROVIDER] Stream completed. Final length: ${finalResponse.length}');
+        debugPrint('[CHAT_PROVIDER] Stream completed. Response length: ${finalResponse.length}');
         
-        // Save to history
+        // Save encrypted data to history
         if (historyProvider != null) {
           historyProvider.addEntry(
             providerName: providerDisplayName ?? providerType.name,
@@ -191,12 +199,12 @@ class ChatProvider extends ChangeNotifier {
             query: text,
             response: finalResponse,
           );
-          debugPrint('[CHAT_PROVIDER] Saved response to history');
+          debugPrint('[CHAT_PROVIDER] Saved encrypted response to history');
         }
         
         // Auto-speak if the setting is enabled
         if (autoSpeak && !completer.isCompleted) {
-          debugPrint('[CHAT_PROVIDER] Auto-speak enabled, speaking FULL response...');
+          debugPrint('[CHAT_PROVIDER] Auto-speak enabled, speaking response...');
           await speakText(finalResponse, voiceIndex: voiceIndex, language: language ?? 'english');
         }
       }
@@ -277,7 +285,7 @@ class ChatProvider extends ChangeNotifier {
     String filteredText = _filterImageUrlsFromText(text);
     if (filteredText.isEmpty) return;
     
-    debugPrint('[CHAT_PROVIDER] Starting TTS for text: ${filteredText.substring(0, filteredText.length > 50 ? 50 : filteredText.length)}...');
+    debugPrint('[CHAT_PROVIDER] Starting TTS for text: [ENCRYPTED CONTENT]');
     _currentSpeakingText = filteredText;
     notifyListeners();
     

@@ -7,7 +7,7 @@ This document summarizes the preparation and final steps for publishing the Litt
 ### 1. Versioning & Identity
 - **App Name**: Little Minds
 - **Package Name**: `com.littlemind.ai`
-- **Version**: `1.0.0+1` (Verified in `pubspec.yaml`)
+- **Version**: `1.1.0+2` (Verified in `pubspec.yaml`)
 
 ### 2. Assets & Icons
 - **App Icon**: `assets/icons/app_icon.png`

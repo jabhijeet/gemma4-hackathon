@@ -58,7 +58,7 @@ class LlmProviderService {
   }) async* {
     debugPrint('[LLM_PROVIDER] ========================================');
     debugPrint('[LLM_PROVIDER] Provider type: $providerType');
-    debugPrint('[LLM_PROVIDER] Message: $text');
+    debugPrint('[LLM_PROVIDER] Message: [ENCRYPTED CONTENT]');
 
     // Build prompt using backend-style mode detection
     final promptData = await _buildPrompt(text,
@@ -529,9 +529,6 @@ class LlmProviderService {
 
     debugPrint(
         '[LLM_PROVIDER] Building prompt: name=$childName, age=$childAge, language=$language, mode=$detectedMode');
-    if (interests?.isNotEmpty == true) {
-      debugPrint('[LLM_PROVIDER] User interests included: $interests');
-    }
 
     switch (detectedMode) {
       case 'story':
