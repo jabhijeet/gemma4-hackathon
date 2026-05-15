@@ -15,3 +15,6 @@
 -keep class io.flutter.** { *; }
 -keep class io.flutter.plugins.** { *; }
 -keep class com.google.android.gms.** { *; }
+
+# Ignore missing Play Core library for deferred components since we don't use them
+-dontwarn com.google.android.play.core.**

@@ -12,6 +12,7 @@ import '../services/speech_service.dart';
 import '../config/app_config.dart';
 import 'llm_provider_settings_screen.dart';
 import 'history_screen.dart';
+import 'privacy_policy_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -20,7 +21,8 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateMixin {
+class _ChatScreenState extends State<ChatScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController controller = TextEditingController();
   final SpeechService _speechService = SpeechService();
   bool isListening = false;
@@ -34,7 +36,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       vsync: this,
       duration: Duration(seconds: 2),
     )..repeat(reverse: true);
-    
+
     _breatheAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
     );
@@ -60,38 +62,40 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     final settings = context.read<SettingsProvider>();
     final providerConfig = settings.getProviderConfig();
     final historyProvider = context.read<HistoryProvider>();
-    
+
     // Set the voice before sending (using language-appropriate voices)
-    context.read<ChatProvider>().setVoice(settings.voiceIndex, language: settings.language);
-    
+    context
+        .read<ChatProvider>()
+        .setVoice(settings.voiceIndex, language: settings.language);
+
     context.read<ChatProvider>().sendMessage(
-      controller.text,
-      name: settings.name,
-      age: settings.age,
-      interests: settings.interests,
-      language: settings.language,
-      selectedMode: settings.mode,
-      autoSpeak: settings.autoSpeak,
-      voiceIndex: settings.voiceIndex,
-      providerType: settings.llmProviderType,
-      ollamaUrl: providerConfig['url'],
-      ollamaModel: providerConfig['model'],
-      geminiApiUrl: providerConfig['api_url'],
-      geminiApiKey: providerConfig['api_key'],
-      geminiModel: providerConfig['model'],
-      customApiUrl: providerConfig['url'],
-      customApiKey: providerConfig['api_key'],
-      customModel: providerConfig['model'],
-      openrouterApiUrl: providerConfig['api_url'],
-      openrouterApiKey: providerConfig['api_key'],
-      openrouterModel: providerConfig['model'],
-      huggingfaceApiUrl: providerConfig['api_url'],
-      huggingfaceApiKey: providerConfig['api_key'],
-      huggingfaceModel: providerConfig['model'],
-      historyProvider: historyProvider,
-      providerDisplayName: settings.llmProviderDisplayName,
-      modelDisplayName: providerConfig['model'] ?? 'default',
-    );
+          controller.text,
+          name: settings.name,
+          age: settings.age,
+          interests: settings.interests,
+          language: settings.language,
+          selectedMode: settings.mode,
+          autoSpeak: settings.autoSpeak,
+          voiceIndex: settings.voiceIndex,
+          providerType: settings.llmProviderType,
+          ollamaUrl: providerConfig['url'],
+          ollamaModel: providerConfig['model'],
+          geminiApiUrl: providerConfig['api_url'],
+          geminiApiKey: providerConfig['api_key'],
+          geminiModel: providerConfig['model'],
+          customApiUrl: providerConfig['url'],
+          customApiKey: providerConfig['api_key'],
+          customModel: providerConfig['model'],
+          openrouterApiUrl: providerConfig['api_url'],
+          openrouterApiKey: providerConfig['api_key'],
+          openrouterModel: providerConfig['model'],
+          huggingfaceApiUrl: providerConfig['api_url'],
+          huggingfaceApiKey: providerConfig['api_key'],
+          huggingfaceModel: providerConfig['model'],
+          historyProvider: historyProvider,
+          providerDisplayName: settings.llmProviderDisplayName,
+          modelDisplayName: providerConfig['model'] ?? 'default',
+        );
     controller.clear();
   }
 
@@ -104,7 +108,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       _animController.repeat(reverse: true);
 
       _speechService.listen((recognizedWords) {
-          controller.text = recognizedWords;
+        controller.text = recognizedWords;
       });
     }
   }
@@ -152,270 +156,282 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                   top: 20,
                 ),
                 child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("⚙️ Settings & Personalization", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 20),
-                    TextField(
-                      controller: nameCtrl,
-                      decoration: InputDecoration(labelText: "Child's Name", border: OutlineInputBorder()),
-                    ),
-                    SizedBox(height: 10),
-                    TextField(
-                      controller: ageCtrl,
-                      decoration: InputDecoration(labelText: "Child's Age (e.g. 5)", border: OutlineInputBorder()),
-                      keyboardType: TextInputType.number,
-                    ),
-                    SizedBox(height: 10),
-                    TextField(
-                      controller: interestsCtrl,
-                      decoration: InputDecoration(labelText: "Interests (e.g. magic, trains)", border: OutlineInputBorder()),
-                    ),
-                    SizedBox(height: 20),
-                    // Dark mode toggle
-                    SwitchListTile(
-                      title: Text("🌙 Dark Mode", style: TextStyle(fontSize: 16)),
-                      subtitle: Text("Switch to dark theme", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                      value: currentDarkMode,
-                      onChanged: (val) {
-                        setState(() => currentDarkMode = val);
-                        settings.toggleDarkMode(val);
-                      },
-                    ),
-                    SizedBox(height: 10),
-                    // Consolidated Voice & Language section
-                    Text("🗣️ Voice & Language", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 12),
-                    
-                    // Language selection
-                    Text("Language Preference:", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                    SizedBox(height: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: AppConfig.getAvailableLanguages().map((lang) {
-                        final isSelected = currentLanguage == lang['code'];
-                        final theme = Theme.of(context);
-                        return InkWell(
-                          onTap: () {
-                            setState(() => currentLanguage = lang['code']!);
-                            // Auto-save on change
-                            settings.updateSettings(
-                              name: nameCtrl.text,
-                              age: int.tryParse(ageCtrl.text) ?? 5,
-                              interests: interestsCtrl.text,
-                              language: lang['code']!,
-                              mode: currentMode,
-                              autoSpeak: currentAutoSpeak,
-                              voiceIndex: currentVoiceIndex,
-                            );
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: isSelected ? theme.primaryColor : Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(10),
-                              color: isSelected ? theme.primaryColor.withValues(alpha: 0.1) : Colors.transparent,
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                                  color: isSelected ? theme.primaryColor : Colors.grey,
-                                  size: 20,
-                                ),
-                                SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(lang['name']!, style: TextStyle(fontSize: 14)),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    SizedBox(height: 16),
-                    
-                    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) ...[
-                      // Auto-speak toggle
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: SwitchListTile(
-                          title: Text("🔊 Auto-speak responses", style: TextStyle(fontSize: 14)),
-                          subtitle: Text("Automatically read LLM responses aloud", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                          value: currentAutoSpeak,
-                          contentPadding: EdgeInsets.zero,
-                          onChanged: (val) {
-                            setState(() => currentAutoSpeak = val);
-                            settings.updateSettings(
-                              name: nameCtrl.text,
-                              age: int.tryParse(ageCtrl.text) ?? 5,
-                              interests: interestsCtrl.text,
-                              language: currentLanguage,
-                              mode: currentMode,
-                              autoSpeak: currentAutoSpeak,
-                              voiceIndex: currentVoiceIndex,
-                            );
-                          },
-                        ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("⚙️ Settings & Personalization",
+                          style: TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 20),
+                      TextField(
+                        controller: nameCtrl,
+                        decoration: InputDecoration(
+                            labelText: "Child's Name",
+                            border: OutlineInputBorder()),
                       ),
-                      SizedBox(height: 16),
-                      
-                      // Voice selection
-                      Text("TTS Voice Preference:", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                      SizedBox(height: 10),
+                      TextField(
+                        controller: ageCtrl,
+                        decoration: InputDecoration(
+                            labelText: "Child's Age (e.g. 5)",
+                            border: OutlineInputBorder()),
+                        keyboardType: TextInputType.number,
+                      ),
+                      SizedBox(height: 10),
+                      TextField(
+                        controller: interestsCtrl,
+                        decoration: InputDecoration(
+                            labelText: "Interests (e.g. magic, trains)",
+                            border: OutlineInputBorder()),
+                      ),
+                      SizedBox(height: 20),
+                      // Dark mode toggle
+                      SwitchListTile(
+                        title: Text("🌙 Dark Mode",
+                            style: TextStyle(fontSize: 16)),
+                        subtitle: Text("Switch to dark theme",
+                            style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        value: currentDarkMode,
+                        onChanged: (val) {
+                          setState(() => currentDarkMode = val);
+                          settings.toggleDarkMode(val);
+                        },
+                      ),
+                      SizedBox(height: 10),
+                      // Consolidated Voice & Language section
+                      Text("🗣️ Voice & Language",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 12),
+
+                      // Language selection
+                      Text("Language Preference:",
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500)),
                       SizedBox(height: 8),
-                    Consumer<ChatProvider>(
-                      builder: (context, chatProvider, child) {
-                        // Filter voices based on current language selection
-                        final voiceNames = chatProvider.getVoiceDisplayNames(language: currentLanguage);
-                        if (voiceNames.isEmpty) {
-                          return Text('Loading voices...', style: TextStyle(color: Colors.grey));
-                        }
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: voiceNames.asMap().entries.map((entry) {
-                            final isSelected = currentVoiceIndex == entry.key;
-                            final theme = Theme.of(context);
-                            final childName = nameCtrl.text.trim();
-                            final previewPhrase = childName.isNotEmpty
-                                ? 'Hello, I am ${entry.value.split(' ').first}. Nice to meet you, $childName!'
-                                : 'Hello! I am ${entry.value.split(' ').first}. I am your story friend!';
-                            return Container(
-                              margin: EdgeInsets.only(bottom: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: AppConfig.getAvailableLanguages().map((lang) {
+                          final isSelected = currentLanguage == lang['code'];
+                          final theme = Theme.of(context);
+                          return InkWell(
+                            onTap: () {
+                              setState(() => currentLanguage = lang['code']!);
+                              // Auto-save on change
+                              settings.updateSettings(
+                                name: nameCtrl.text,
+                                age: int.tryParse(ageCtrl.text) ?? 5,
+                                interests: interestsCtrl.text,
+                                language: lang['code']!,
+                                mode: currentMode,
+                                autoSpeak: currentAutoSpeak,
+                                voiceIndex: currentVoiceIndex,
+                              );
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 12),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: isSelected ? theme.primaryColor : Colors.grey.shade300,
-                                  width: isSelected ? 2 : 1,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
+                                    color: isSelected
+                                        ? theme.primaryColor
+                                        : Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(10),
                                 color: isSelected
                                     ? theme.primaryColor.withValues(alpha: 0.1)
                                     : Colors.transparent,
                               ),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(12),
-                                onTap: () {
-                                  setState(() => currentVoiceIndex = entry.key);
-                                  settings.updateVoiceIndex(entry.key);
-                                  // If TTS is paused/playing, restart with new voice
-                                  if (chatProvider.isPaused || chatProvider.isSpeaking) {
-                                    chatProvider.restartWithNewVoice(
-                                      voiceIndex: entry.key,
-                                      language: currentLanguage,
-                                    );
-                                  }
-                                },
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        isSelected ? Icons.check_circle : Icons.circle_outlined,
-                                        color: isSelected ? theme.primaryColor : Colors.grey,
-                                        size: 20,
-                                      ),
-                                      SizedBox(width: 10),
-                                      Expanded(
-                                        child: Text(
-                                          entry.value,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                            color: isSelected
-                                                ? theme.primaryColor
-                                                : theme.textTheme.bodyLarge?.color,
-                                          ),
-                                        ),
-                                      ),
-                                      // 🔊 Test voice button
-                                      Tooltip(
-                                        message: 'Test this voice',
-                                        child: InkWell(
-                                          onTap: () {
-                                            // Select voice first, then preview
-                                            setState(() => currentVoiceIndex = entry.key);
-                                            settings.updateVoiceIndex(entry.key);
-                                            chatProvider.speakVoicePreview(
-                                              voiceIndex: entry.key,
-                                              language: currentLanguage,
-                                              previewText: previewPhrase,
-                                            );
-                                          },
-                                          borderRadius: BorderRadius.circular(20),
-                                          child: Padding(
-                                            padding: EdgeInsets.all(6),
-                                            child: Icon(
-                                              Icons.volume_up_rounded,
-                                              size: 20,
-                                              color: theme.primaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    isSelected
+                                        ? Icons.radio_button_checked
+                                        : Icons.radio_button_unchecked,
+                                    color: isSelected
+                                        ? theme.primaryColor
+                                        : Colors.grey,
+                                    size: 20,
                                   ),
-                                ),
+                                  SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(lang['name']!,
+                                        style: TextStyle(fontSize: 14)),
+                                  ),
+                                ],
                               ),
-                            );
-                          }).toList(),
-                        );
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    ],
-                    Text("Response Mode:", style: TextStyle(fontSize: 16)),
-                    RadioGroup<String>(
-                      groupValue: currentMode,
-                      onChanged: (val) {
-                        setState(() => currentMode = val!);
-                        // Auto-save on change
-                        settings.updateSettings(
-                          name: nameCtrl.text,
-                          age: int.tryParse(ageCtrl.text) ?? 5,
-                          interests: interestsCtrl.text,
-                          language: currentLanguage,
-                          mode: currentMode,
-                          autoSpeak: currentAutoSpeak,
-                          voiceIndex: currentVoiceIndex,
-                        );
-                      },
-                      child: Column(
-                        children: [
-                          _buildModeOption('auto', '🤖 Auto Detect', 'Let AI choose', currentMode),
-                          _buildModeOption('story', '🌈 Story Mode', 'Magical stories', currentMode),
-                          _buildModeOption('emotion', '🌙 Emotion Support', 'Gentle emotional guidance', currentMode),
-                          _buildModeOption('parent', '👨‍👩‍👧 Parent Mode', 'Parenting advice', currentMode),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    // LLM Provider Settings Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(ctx); // Close current modal
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LlmProviderSettingsScreen(),
                             ),
                           );
-                        },
-                        icon: const Icon(Icons.dns),
-                        label: const Text('⚡ LLM Provider Settings'),
+                        }).toList(),
                       ),
-                    ),
-                    SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
+                      SizedBox(height: 16),
+
+                      if (!kIsWeb &&
+                          defaultTargetPlatform == TargetPlatform.android) ...[
+                        // Auto-speak toggle
+                        Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: SwitchListTile(
+                            title: Text("🔊 Auto-speak responses",
+                                style: TextStyle(fontSize: 14)),
+                            subtitle: Text(
+                                "Automatically read LLM responses aloud",
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey)),
+                            value: currentAutoSpeak,
+                            contentPadding: EdgeInsets.zero,
+                            onChanged: (val) {
+                              setState(() => currentAutoSpeak = val);
+                              settings.updateSettings(
+                                name: nameCtrl.text,
+                                age: int.tryParse(ageCtrl.text) ?? 5,
+                                interests: interestsCtrl.text,
+                                language: currentLanguage,
+                                mode: currentMode,
+                                autoSpeak: currentAutoSpeak,
+                                voiceIndex: currentVoiceIndex,
+                              );
+                            },
+                          ),
+                        ),
+                        SizedBox(height: 16),
+
+                        // Voice selection
+                        Text("TTS Voice Preference:",
+                            style: TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w500)),
+                        SizedBox(height: 8),
+                        Consumer<ChatProvider>(
+                          builder: (context, chatProvider, child) {
+                            // Filter voices based on current language selection
+                            final voiceNames =
+                                chatProvider.getVoiceDisplayNames(
+                                    language: currentLanguage);
+                            if (voiceNames.isEmpty) {
+                              return Text('Loading voices...',
+                                  style: TextStyle(color: Colors.grey));
+                            }
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: voiceNames.asMap().entries.map((entry) {
+                                final isSelected =
+                                    currentVoiceIndex == entry.key;
+                                final theme = Theme.of(context);
+                                final childName = nameCtrl.text.trim();
+                                final previewPhrase = childName.isNotEmpty
+                                    ? 'Hello, I am ${entry.value.split(' ').first}. Nice to meet you, $childName!'
+                                    : 'Hello! I am ${entry.value.split(' ').first}. I am your story friend!';
+                                return Container(
+                                  margin: EdgeInsets.only(bottom: 8),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? theme.primaryColor
+                                          : Colors.grey.shade300,
+                                      width: isSelected ? 2 : 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: isSelected
+                                        ? theme.primaryColor
+                                            .withValues(alpha: 0.1)
+                                        : Colors.transparent,
+                                  ),
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(12),
+                                    onTap: () {
+                                      setState(
+                                          () => currentVoiceIndex = entry.key);
+                                      settings.updateVoiceIndex(entry.key);
+                                      // If TTS is paused/playing, restart with new voice
+                                      if (chatProvider.isPaused ||
+                                          chatProvider.isSpeaking) {
+                                        chatProvider.restartWithNewVoice(
+                                          voiceIndex: entry.key,
+                                          language: currentLanguage,
+                                        );
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 10),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            isSelected
+                                                ? Icons.check_circle
+                                                : Icons.circle_outlined,
+                                            color: isSelected
+                                                ? theme.primaryColor
+                                                : Colors.grey,
+                                            size: 20,
+                                          ),
+                                          SizedBox(width: 10),
+                                          Expanded(
+                                            child: Text(
+                                              entry.value,
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: isSelected
+                                                    ? FontWeight.w600
+                                                    : FontWeight.normal,
+                                                color: isSelected
+                                                    ? theme.primaryColor
+                                                    : theme.textTheme.bodyLarge
+                                                        ?.color,
+                                              ),
+                                            ),
+                                          ),
+                                          // 🔊 Test voice button
+                                          Tooltip(
+                                            message: 'Test this voice',
+                                            child: InkWell(
+                                              onTap: () {
+                                                // Select voice first, then preview
+                                                setState(() =>
+                                                    currentVoiceIndex =
+                                                        entry.key);
+                                                settings.updateVoiceIndex(
+                                                    entry.key);
+                                                chatProvider.speakVoicePreview(
+                                                  voiceIndex: entry.key,
+                                                  language: currentLanguage,
+                                                  previewText: previewPhrase,
+                                                );
+                                              },
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              child: Padding(
+                                                padding: EdgeInsets.all(6),
+                                                child: Icon(
+                                                  Icons.volume_up_rounded,
+                                                  size: 20,
+                                                  color: theme.primaryColor,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            );
+                          },
+                        ),
+                        SizedBox(height: 16),
+                      ],
+                      Text("Response Mode:", style: TextStyle(fontSize: 16)),
+                      RadioGroup<String>(
+                        groupValue: currentMode,
+                        onChanged: (val) {
+                          setState(() => currentMode = val!);
+                          // Auto-save on change
                           settings.updateSettings(
                             name: nameCtrl.text,
                             age: int.tryParse(ageCtrl.text) ?? 5,
@@ -425,16 +441,87 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                             autoSpeak: currentAutoSpeak,
                             voiceIndex: currentVoiceIndex,
                           );
-                          Navigator.pop(ctx);
                         },
-                        child: Text("Save Preferences", style: TextStyle(color: Colors.white, fontSize: 16)),
+                        child: Column(
+                          children: [
+                            _buildModeOption('auto', '🤖 Auto Detect',
+                                'Let AI choose', currentMode),
+                            _buildModeOption('story', '🌈 Story Mode',
+                                'Magical stories', currentMode),
+                            _buildModeOption('emotion', '🌙 Emotion Support',
+                                'Gentle emotional guidance', currentMode),
+                            _buildModeOption('parent', '👨‍👩‍👧 Parent Mode',
+                                'Parenting advice', currentMode),
+                          ],
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 20),
-                  ],
+                      SizedBox(height: 20),
+                      // LLM Provider Settings Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(ctx); // Close current modal
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const LlmProviderSettingsScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.dns),
+                          label: const Text('⚡ LLM Provider Settings'),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Privacy Policy Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: TextButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const PrivacyPolicyScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.privacy_tip_outlined, size: 18),
+                          label: const Text('Privacy Policy'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.grey,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            settings.updateSettings(
+                              name: nameCtrl.text,
+                              age: int.tryParse(ageCtrl.text) ?? 5,
+                              interests: interestsCtrl.text,
+                              language: currentLanguage,
+                              mode: currentMode,
+                              autoSpeak: currentAutoSpeak,
+                              voiceIndex: currentVoiceIndex,
+                            );
+                            Navigator.pop(ctx);
+                          },
+                          child: Text("Save Preferences",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 16)),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               ),
-            ),
             );
           },
         );
@@ -442,18 +529,24 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildModeOption(String value, String title, String subtitle, String currentMode) {
+  Widget _buildModeOption(
+      String value, String title, String subtitle, String currentMode) {
     final isSelected = currentMode == value;
     final theme = Theme.of(context);
     return Container(
       margin: EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        border: Border.all(color: isSelected ? theme.primaryColor : Colors.grey.shade300),
+        border: Border.all(
+            color: isSelected ? theme.primaryColor : Colors.grey.shade300),
         borderRadius: BorderRadius.circular(10),
-        color: isSelected ? theme.primaryColor.withValues(alpha: 0.1) : theme.cardColor,
+        color: isSelected
+            ? theme.primaryColor.withValues(alpha: 0.1)
+            : theme.cardColor,
       ),
       child: RadioListTile<String>(
-        title: Text(title, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+        title: Text(title,
+            style: TextStyle(
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
         subtitle: Text(subtitle, style: TextStyle(fontSize: 12)),
         value: value,
         activeColor: theme.primaryColor,
@@ -508,7 +601,8 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                 ),
                 dropdownColor: theme.colorScheme.surface,
                 onChanged: (LlmProviderType? newValue) {
-                  if (newValue != null && newValue != settings.llmProviderType) {
+                  if (newValue != null &&
+                      newValue != settings.llmProviderType) {
                     // Update provider type, keep existing configuration
                     settings.updateLlmProvider(
                       providerType: newValue,
@@ -529,7 +623,9 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                     );
                   }
                 },
-                items: LlmProviderType.values.map<DropdownMenuItem<LlmProviderType>>((LlmProviderType type) {
+                items: LlmProviderType.values
+                    .map<DropdownMenuItem<LlmProviderType>>(
+                        (LlmProviderType type) {
                   String displayName;
                   switch (type) {
                     case LlmProviderType.ollama:
@@ -571,7 +667,8 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                           model,
                           style: TextStyle(
                             fontSize: 11,
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.7),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -609,22 +706,27 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
               padding: EdgeInsets.all(10),
               child: Column(
                 children: [
-                   ScaleTransition(
-                     scale: chatProvider.isLoading ?
-                            Tween<double>(begin: 1.0, end: 1.2).animate(CurvedAnimation(parent: _animController, curve: Curves.bounceIn))
-                            : _breatheAnimation,
-                     child: Text(
-                        "🐼",
-                        style: TextStyle(fontSize: 60),
-                     ),
-                   ),
-                   SizedBox(height: 10),
+                  ScaleTransition(
+                    scale: chatProvider.isLoading
+                        ? Tween<double>(begin: 1.0, end: 1.2).animate(
+                            CurvedAnimation(
+                                parent: _animController,
+                                curve: Curves.bounceIn))
+                        : _breatheAnimation,
+                    child: Text(
+                      "🐼",
+                      style: TextStyle(fontSize: 60),
+                    ),
+                  ),
+                  SizedBox(height: 10),
                   Text(
                     "Hi ${settings.name.isNotEmpty ? settings.name : 'Friend'}! I'm your story friend",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    chatProvider.isLoading ? "Thinking of a story... 💭" : "Tap 🎤 and speak to me!",
+                    chatProvider.isLoading
+                        ? "Thinking of a story... 💭"
+                        : "Tap 🎤 and speak to me!",
                     style: TextStyle(color: theme.textTheme.bodyMedium?.color),
                   ),
                 ],
@@ -632,7 +734,8 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
             ),
             Expanded(
               child: ListView.builder(
-                itemCount: chatProvider.messages.length + (chatProvider.isLoading ? 1 : 0),
+                itemCount: chatProvider.messages.length +
+                    (chatProvider.isLoading ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index == chatProvider.messages.length) {
                     return Padding(
@@ -643,7 +746,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                       ),
                     );
                   }
-                  
+
                   final msg = chatProvider.messages[index];
                   return MessageBubble(
                     text: msg.text,
@@ -656,14 +759,17 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
               ),
             ),
             // TTS control overlay
-            if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android && (chatProvider.isSpeaking || chatProvider.isPaused))
+            if (!kIsWeb &&
+                defaultTargetPlatform == TargetPlatform.android &&
+                (chatProvider.isSpeaking || chatProvider.isPaused))
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: theme.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: theme.primaryColor.withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: theme.primaryColor.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -671,14 +777,17 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                     Row(
                       children: [
                         Icon(
-                          chatProvider.isPaused ? Icons.pause_circle : Icons.volume_up,
+                          chatProvider.isPaused
+                              ? Icons.pause_circle
+                              : Icons.volume_up,
                           color: theme.primaryColor,
                           size: 20,
                         ),
                         SizedBox(width: 8),
                         Text(
                           chatProvider.isPaused ? 'Paused' : 'Reading...',
-                          style: TextStyle(color: theme.primaryColor, fontSize: 14),
+                          style: TextStyle(
+                              color: theme.primaryColor, fontSize: 14),
                         ),
                         // Show progress if available
                         if (chatProvider.ttsProgress > 0)
@@ -686,7 +795,10 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                             padding: EdgeInsets.only(left: 8),
                             child: Text(
                               '${(chatProvider.ttsProgress * 100).toInt()}%',
-                              style: TextStyle(color: theme.primaryColor.withValues(alpha: 0.7), fontSize: 12),
+                              style: TextStyle(
+                                  color:
+                                      theme.primaryColor.withValues(alpha: 0.7),
+                                  fontSize: 12),
                             ),
                           ),
                       ],
@@ -696,7 +808,9 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                         // Pause/Resume button
                         IconButton(
                           icon: Icon(
-                            chatProvider.isPaused ? Icons.play_arrow : Icons.pause,
+                            chatProvider.isPaused
+                                ? Icons.play_arrow
+                                : Icons.pause,
                             color: theme.primaryColor,
                             size: 20,
                           ),
